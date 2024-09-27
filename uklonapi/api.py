@@ -1,6 +1,7 @@
 from enum import StrEnum
 from functools import wraps
 from inspect import isgenerator, isgeneratorfunction, ismethod
+from pathlib import Path
 from types import MethodType
 
 from pydantic import TypeAdapter
@@ -68,6 +69,7 @@ def uklon_api(
 
 class UklonAPI:
     _base_url = "https://m.uklon.com.ua/api"
+    _default_filename = "auth.json"
 
     def __init__(self, app_uid: str, client_id: str, client_secret: str):
         self.app_uid = app_uid
@@ -122,6 +124,15 @@ class UklonAPI:
 
     def account_auth_refresh_token(self):
         self._account__auth("refresh_token", refresh_token=self.auth.refresh_token)
+
+    def account_auth_save_to_file(self, filename: str = None):
+        if self.auth:
+            json = self.auth.model_dump_json()
+            Path(filename or self._default_filename).write_text(json)
+
+    def account_auth_load_from_file(self, filename: str = None):
+        json = Path(filename or self._default_filename).read_text()
+        self.auth = Auth.model_validate_json(json)
 
     @uklon_api
     def favorite_addresses(self) -> list[Address]:
