@@ -1,5 +1,6 @@
 from enum import StrEnum
 from functools import wraps
+from inspect import isgenerator, isgeneratorfunction
 
 from pydantic import TypeAdapter
 from requests import Response, Session
@@ -10,34 +11,45 @@ from .types.me import Me
 from .types.payment_methods import PaymentMethods
 
 
-def _uklon_api_response(method: str):
-    def decorator(version, json=True):
-        def _(f):
-            path = f.__name__.replace("_", "-")
-            return_type = f.__annotations__["return"]
-            type_adapter = TypeAdapter(return_type)
-
-            @wraps(f)
-            def wrapper(self, **kwargs):
-                kwargs = f(self, **kwargs) or kwargs
-                kw = {"json" if json else "data": kwargs} if kwargs else {}
-                response = getattr(self, method)(version, path, **kw)
-                return type_adapter.validate_json(response.text)
-
-            return wrapper
-
-        return _
-
-    return decorator
-
-
-uklon_api_get = _uklon_api_response("_get")
-uklon_api_post = _uklon_api_response("_post")
+class APIMethod(StrEnum):
+    GET = "_get"
+    POST = "_post"
 
 
 class APIVersion(StrEnum):
     V1 = "v1"
     V2 = "v2"
+
+
+def uklon_api(
+    method: APIMethod = APIMethod.GET, version: APIVersion = APIVersion.V1, json=True
+):
+    def decorator(f):
+        path = f.__name__.lstrip("_").replace("__", "/").replace("_", "-")
+        return_type = f.__annotations__.get("return")
+        type_adapter = TypeAdapter(return_type) if return_type else None
+
+        @wraps(f)
+        def wrapper(self, *args, **kwargs):
+            gen = (
+                f(self, *args, **kwargs)
+                if isgeneratorfunction(f)
+                else iter([f(self, **kwargs)])
+            )
+
+            kwargs = next(gen) or kwargs
+            kw = {"json" if json else "data": kwargs} if kwargs else {}
+            response = getattr(self, method)(version, path, **kw)
+
+            if isgenerator(gen):
+                gen.send(response)
+
+            if type_adapter:
+                return type_adapter.validate_json(response.text)
+
+        return wrapper
+
+    return decorator
 
 
 class UklonAPI:
@@ -62,6 +74,7 @@ class UklonAPI:
             "Authorization": f"{self.auth.token_type} {self.auth.access_token}",
         }
         response = self._session.get(url, headers=headers)
+        response.raise_for_status()
         return response
 
     def _post(self, version, path, *, data=None, json=None) -> Response:
@@ -74,32 +87,36 @@ class UklonAPI:
 
         json = json if data else (json or {})
         response = self._session.post(url, headers=headers, data=data, json=json)
+        response.raise_for_status()
         return response
 
-    def _account_auth(self, grant_type, **kwargs):
+    @uklon_api(APIMethod.POST, APIVersion.V1, json=False)
+    def _account__auth(self, grant_type, **kwargs):
         data = {
             "grant_type": grant_type,
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             **kwargs,
         }
-        response = self._post(APIVersion.V1, "account/auth", data=data)
+
+        response = yield data
+
         self.auth = Auth.model_validate_json(response.text)
 
     def account_auth_password(self, username: str, password: str):
-        self._account_auth("password", username=username, password=password)
+        self._account__auth("password", username=username, password=password)
 
     def account_auth_refresh_token(self):
-        self._account_auth("refresh_token", refresh_token=self.auth.refresh_token)
+        self._account__auth("refresh_token", refresh_token=self.auth.refresh_token)
 
-    @uklon_api_get(APIVersion.V1)
+    @uklon_api()
     def favorite_addresses(self) -> list[Address]:
         pass
 
-    @uklon_api_get(APIVersion.V1)
+    @uklon_api()
     def me(self) -> Me:
         pass
 
-    @uklon_api_post(APIVersion.V2)
+    @uklon_api(APIMethod.POST, APIVersion.V2)
     def payment_methods(self) -> PaymentMethods:
         pass
