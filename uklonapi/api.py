@@ -81,24 +81,24 @@ class UklonAPI:
     def _url(self, version, path):
         return f"{self._base_url}/{version}/{path}"
 
+    def _headers(self):
+        headers = {"App_uid": self.app_uid}
+        if self.auth:
+            headers["Authorization"] = (
+                f"{self.auth.token_type} {self.auth.access_token}"
+            )
+        return headers
+
     def _get(self, version, path) -> Response:
         url = self._url(version, path)
-        headers = {
-            "App_uid": self.app_uid,
-            "Authorization": f"{self.auth.token_type} {self.auth.access_token}",
-        }
+        headers = self._headers()
         response = self._session.get(url, headers=headers)
         response.raise_for_status()
         return response
 
     def _post(self, version, path, *, data=None, json=None) -> Response:
         url = self._url(version, path)
-        headers = {"App_uid": self.app_uid}
-        if self.auth:
-            headers["Authorization"] = (
-                f"{self.auth.token_type} {self.auth.access_token}"
-            )
-
+        headers = self._headers()
         json = json if data else (json or {})
         response = self._session.post(url, headers=headers, data=data, json=json)
         response.raise_for_status()
