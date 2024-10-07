@@ -1,7 +1,7 @@
 from contextlib import suppress
 from enum import StrEnum
 from functools import wraps
-from inspect import isgenerator, isgeneratorfunction, ismethod
+from inspect import isfunction, isgenerator, isgeneratorfunction
 from pathlib import Path
 from types import MethodType
 
@@ -59,7 +59,7 @@ def uklon_api(
     *,
     json: bool = True,
 ):
-    if ismethod(method):
+    if isfunction(method):
         f, method = method, APIMethod.GET
         return _uklon_api_wrapper(f, method, version, json)
 
