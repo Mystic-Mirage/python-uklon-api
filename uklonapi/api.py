@@ -1,3 +1,4 @@
+from contextlib import suppress
 from enum import StrEnum
 from functools import wraps
 from inspect import isgenerator, isgeneratorfunction, ismethod
@@ -43,7 +44,8 @@ def _uklon_api_wrapper(
         response = getattr(self, method)(version, path, **kw)
 
         if isgenerator(gen):
-            gen.send(response)
+            with suppress(StopIteration):
+                gen.send(response)
 
         if type_adapter:
             return type_adapter.validate_json(response.text)
