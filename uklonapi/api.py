@@ -30,8 +30,6 @@ def _uklon_api_wrapper(
     # Get a request path from the function name
     # `_` at the beginning is ignored, `__` is for `/` and `_` is for `-`
     path = f.__name__.lstrip("_").replace("__", "/").replace("_", "-")
-    return_type = f.__annotations__.get("return")
-    type_adapter = TypeAdapter(return_type) if return_type else None
 
     @wraps(f)
     def wrapper(self: "UklonAPI", *args, **kwargs):
@@ -56,7 +54,11 @@ def _uklon_api_wrapper(
         except StopIteration as e:
             data = e.value or data
 
-        result = type_adapter.validate_python(data) if type_adapter else None
+        result = (
+            TypeAdapter(return_type).validate_python(data)
+            if (return_type := f.__annotations__.get("return"))
+            else None
+        )
 
         with suppress(StopIteration):
             # The third yield (or return) receives a Pydantic object
