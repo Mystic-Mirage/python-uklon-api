@@ -151,7 +151,7 @@ class UklonAPI:
 
     def auth_save_to_file(self, filename: str = None):
         if self.auth:
-            json = self.auth.model_dump_json()
+            json = self.auth.model_dump_json(indent=2) + "\n"
             Path(filename or self._default_filename).write_text(json)
 
     def auth_load_from_file(self, filename: str = None):
