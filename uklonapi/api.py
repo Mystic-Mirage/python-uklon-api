@@ -159,13 +159,10 @@ class UklonAPI:
         self.auth = Auth.model_validate_json(json)
 
     @uklon_api
-    def favorite_addresses(self) -> list[Address]:
-        pass
+    def favorite_addresses(self) -> list[Address]: ...
 
     @uklon_api
-    def me(self) -> Me:
-        pass
+    def me(self) -> Me: ...
 
     @uklon_api(APIMethod.POST, APIVersion.V2)
-    def payment_methods(self) -> PaymentMethods:
-        pass
+    def payment_methods(self) -> PaymentMethods: ...
