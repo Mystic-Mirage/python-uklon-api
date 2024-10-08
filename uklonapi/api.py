@@ -149,12 +149,12 @@ class UklonAPI:
         refresh_token, self.auth = self.auth.refresh_token, None
         self.account__auth(GrantType.REFRESH_TOKEN, refresh_token=refresh_token)
 
-    def account_auth_save_to_file(self, filename: str = None):
+    def auth_save_to_file(self, filename: str = None):
         if self.auth:
             json = self.auth.model_dump_json()
             Path(filename or self._default_filename).write_text(json)
 
-    def account_auth_load_from_file(self, filename: str = None):
+    def auth_load_from_file(self, filename: str = None):
         json = Path(filename or self._default_filename).read_text()
         self.auth = Auth.model_validate_json(json)
 
