@@ -105,10 +105,10 @@ class UklonAPI:
 
         self._session = Session()
 
-    def _url(self, version, path):
+    def _url(self, version: APIVersion, path: str) -> str:
         return f"{self._base_url}/{version}/{path}"
 
-    def _headers(self):
+    def _headers(self) -> dict[str, str]:
         headers = {"App_uid": self.app_uid}
         if self.auth:
             headers["Authorization"] = (
