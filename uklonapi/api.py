@@ -24,7 +24,7 @@ class APIVersion(StrEnum):
     V2 = auto()
 
 
-class GrantType(StrEnum):
+class AuthGrantType(StrEnum):
     PASSWORD = auto()
     REFRESH_TOKEN = auto()
 
@@ -143,11 +143,11 @@ class UklonAPI:
 
     def account_auth_password(self, username: str, password: str):
         self.auth = None
-        self.account__auth(GrantType.PASSWORD, username=username, password=password)
+        self.account__auth(AuthGrantType.PASSWORD, username=username, password=password)
 
     def account_auth_refresh_token(self):
         refresh_token, self.auth = self.auth.refresh_token, None
-        self.account__auth(GrantType.REFRESH_TOKEN, refresh_token=refresh_token)
+        self.account__auth(AuthGrantType.REFRESH_TOKEN, refresh_token=refresh_token)
 
     def auth_save_to_file(self, filename: str = None):
         if self.auth:
