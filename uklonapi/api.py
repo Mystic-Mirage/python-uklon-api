@@ -1,5 +1,5 @@
 from contextlib import suppress
-from enum import StrEnum
+from enum import StrEnum, auto
 from functools import wraps
 from inspect import isfunction, isgeneratorfunction
 from pathlib import Path
@@ -15,13 +15,18 @@ from .types.payment_methods import PaymentMethods
 
 
 class APIMethod(StrEnum):
-    GET = "_get"
-    POST = "_post"
+    GET = auto()
+    POST = auto()
 
 
 class APIVersion(StrEnum):
-    V1 = "v1"
-    V2 = "v2"
+    V1 = auto()
+    V2 = auto()
+
+
+class GrantType(StrEnum):
+    PASSWORD = auto()
+    REFRESH_TOKEN = auto()
 
 
 def _uklon_api_wrapper(
@@ -77,6 +82,7 @@ def uklon_api(
     json: bool = True,
 ):
     if isfunction(method):
+        # Function passed as the first argument
         f, method = method, APIMethod.GET
         return _uklon_api_wrapper(f, method, version, json)
 
@@ -110,14 +116,14 @@ class UklonAPI:
             )
         return headers
 
-    def _get(self, version, path) -> Response:
+    def get(self, version, path) -> Response:
         url = self._url(version, path)
         headers = self._headers()
         response = self._session.get(url, headers=headers)
         response.raise_for_status()
         return response
 
-    def _post(self, version, path, *, data=None, json=None) -> Response:
+    def post(self, version, path, *, data=None, json=None) -> Response:
         url = self._url(version, path)
         headers = self._headers()
         json = json if data else (json or {})
@@ -126,7 +132,7 @@ class UklonAPI:
         return response
 
     @uklon_api(APIMethod.POST, json=False)
-    def _account__auth(self, grant_type, **kwargs) -> Auth:
+    def account__auth(self, grant_type, **kwargs) -> Auth:
         yield {
             "grant_type": grant_type,
             "client_id": self.client_id,
@@ -137,11 +143,11 @@ class UklonAPI:
 
     def account_auth_password(self, username: str, password: str):
         self.auth = None
-        self._account__auth("password", username=username, password=password)
+        self.account__auth(GrantType.PASSWORD, username=username, password=password)
 
     def account_auth_refresh_token(self):
         refresh_token, self.auth = self.auth.refresh_token, None
-        self._account__auth("refresh_token", refresh_token=refresh_token)
+        self.account__auth(GrantType.REFRESH_TOKEN, refresh_token=refresh_token)
 
     def account_auth_save_to_file(self, filename: str = None):
         if self.auth:
