@@ -1,9 +1,9 @@
 from contextlib import suppress
 from enum import StrEnum
 from functools import wraps
-from inspect import isfunction, isgenerator, isgeneratorfunction
+from inspect import isfunction, isgeneratorfunction
 from pathlib import Path
-from types import MethodType
+from types import FunctionType
 
 from pydantic import TypeAdapter
 from requests import Response, Session
@@ -25,30 +25,45 @@ class APIVersion(StrEnum):
 
 
 def _uklon_api_wrapper(
-    f: MethodType, method: APIMethod, version: APIVersion, json: bool
+    f: FunctionType, method: APIMethod, version: APIVersion, json: bool
 ):
+    # Get a request path from the function name
+    # `_` at the beginning is ignored, `__` is for `/` and `_` is for `-`
     path = f.__name__.lstrip("_").replace("__", "/").replace("_", "-")
     return_type = f.__annotations__.get("return")
     type_adapter = TypeAdapter(return_type) if return_type else None
 
     @wraps(f)
     def wrapper(self: "UklonAPI", *args, **kwargs):
-        gen = (
+        generator = (
             f(self, *args, **kwargs)
             if isgeneratorfunction(f)
-            else iter([f(self, **kwargs)])
+            else (x(self, *args, **kwargs) for x in (f,))
         )
 
-        kwargs = next(gen) or kwargs
+        # The first generator execution (or the first function call).
+        # Expecting the updated kwargs for request is yielded/returned or None
+        kwargs = next(generator) or kwargs
+
         kw = {"json" if json else "data": kwargs} if kwargs else {}
-        response = getattr(self, method)(version, path, **kw)
+        response: Response = getattr(self, method)(version, path, **kw)
 
-        if isgenerator(gen):
-            with suppress(StopIteration):
-                gen.send(response)
+        data = response.json()
+        try:
+            # The second yield (or return) receives the response data
+            # then the generator modifies it if needed and yields/returns it back
+            data = generator.send(data) or data
+        except StopIteration as e:
+            data = e.value or data
 
-        if type_adapter:
-            return type_adapter.validate_json(response.text)
+        result = type_adapter.validate_python(data) if type_adapter else None
+
+        with suppress(StopIteration):
+            # The third yield (or return) receives a Pydantic object
+            # for example to store it
+            generator.send(result)
+
+        return result
 
     return wrapper
 
@@ -109,23 +124,22 @@ class UklonAPI:
         return response
 
     @uklon_api(APIMethod.POST, json=False)
-    def _account__auth(self, grant_type, **kwargs):
-        data = {
+    def _account__auth(self, grant_type, **kwargs) -> Auth:
+        yield {
             "grant_type": grant_type,
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             **kwargs,
         }
-
-        response = yield data
-
-        self.auth = Auth.model_validate_json(response.text)
+        self.auth = yield
 
     def account_auth_password(self, username: str, password: str):
+        self.auth = None
         self._account__auth("password", username=username, password=password)
 
     def account_auth_refresh_token(self):
-        self._account__auth("refresh_token", refresh_token=self.auth.refresh_token)
+        refresh_token, self.auth = self.auth.refresh_token, None
+        self._account__auth("refresh_token", refresh_token=refresh_token)
 
     def account_auth_save_to_file(self, filename: str = None):
         if self.auth:
