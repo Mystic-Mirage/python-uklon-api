@@ -1,7 +1,7 @@
 from contextlib import suppress
 from enum import StrEnum, auto
 from functools import wraps
-from inspect import isfunction, isgeneratorfunction
+from inspect import getfullargspec, isfunction, isgeneratorfunction
 from pathlib import Path
 from types import FunctionType
 
@@ -11,6 +11,7 @@ from requests import Response, Session
 from .types.account import Auth
 from .types.address import Address
 from .types.me import Me
+from .types.orders_history import OrdersHistory, OrdersHistoryStats
 from .types.payment_methods import PaymentMethods
 
 
@@ -38,17 +39,35 @@ def _uklon_api_wrapper(
 
     @wraps(f)
     def wrapper(self: "UklonAPI", *args, **kwargs):
+        spec = getfullargspec(f)
+        default_kwargs = {
+            k: v
+            for k, v in dict(
+                (
+                    zip(spec.args[-len(spec.defaults) :], spec.defaults)
+                    if spec.defaults
+                    else {}
+                ),
+                **(spec.kwonlydefaults or {}),
+            ).items()
+            if v is not None
+        }
+        call_kwargs = {**default_kwargs, **kwargs}
+
         generator = (
-            f(self, *args, **kwargs)
+            f(self, *args, **call_kwargs)
             if isgeneratorfunction(f)
-            else (x(self, *args, **kwargs) for x in (f,))
+            else (x(self, *args, **call_kwargs) for x in (f,))
         )
 
         # The first generator execution (or the first function call).
         # Expecting the updated kwargs for request is yielded/returned or None
-        kwargs = next(generator) or kwargs
+        call_kwargs = next(generator) or call_kwargs
 
-        kw = {"json" if json else "data": kwargs} if kwargs else {}
+        if method == APIMethod.GET:
+            kw = {"params": call_kwargs} if call_kwargs else {}
+        else:
+            kw = {"json" if json else "data": call_kwargs} if call_kwargs else {}
         response: Response = getattr(self, method)(version, path, **kw)
 
         data = response.json()
@@ -116,10 +135,10 @@ class UklonAPI:
             )
         return headers
 
-    def get(self, version, path) -> Response:
+    def get(self, version, path, *, params=None) -> Response:
         url = self._url(version, path)
         headers = self._headers()
-        response = self._session.get(url, headers=headers)
+        response = self._session.get(url, headers=headers, params=params)
         response.raise_for_status()
         return response
 
@@ -166,3 +185,8 @@ class UklonAPI:
 
     @uklon_api(APIMethod.POST, APIVersion.V2)
     def payment_methods(self) -> PaymentMethods: ...
+
+    @uklon_api
+    def orders_history(
+        self, page: int = None, page_size: int = None, *, include_statistic: bool = None
+    ) -> OrdersHistory | OrdersHistoryStats: ...

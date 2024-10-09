@@ -27,3 +27,4 @@ if __name__ == "__main__":
     pprint(uklon.me())
     pprint(uklon.favorite_addresses())
     pprint(uklon.payment_methods())
+    pprint(uklon.orders_history(include_statistic=True))

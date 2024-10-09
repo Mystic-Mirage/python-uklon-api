@@ -1,10 +1,13 @@
 from pydantic import BaseModel
 
 
-class PaymentMethod(BaseModel):
+class PaymentMethodBase(BaseModel):
     id: str
-    description: str
     payment_type: str
+
+
+class PaymentMethod(PaymentMethodBase):
+    description: str
 
 
 class PaymentMethodCard(PaymentMethod):
