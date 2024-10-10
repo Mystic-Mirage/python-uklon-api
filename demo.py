@@ -25,6 +25,12 @@ if __name__ == "__main__":
     uklon.auth_save_to_file()
 
     pprint(uklon.me())
-    pprint(uklon.favorite_addresses())
-    pprint(uklon.payment_methods())
+    pprint(favorite_addresses := uklon.favorite_addresses())
+    pprint(payment_methods := uklon.payment_methods())
     pprint(uklon.orders_history(include_statistic=True))
+    pprint(
+        uklon.fare_estimate(
+            [address.as_point() for address in favorite_addresses[:2]],
+            payment_methods.default_payment_method,
+        )
+    )

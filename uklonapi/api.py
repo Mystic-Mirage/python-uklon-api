@@ -4,15 +4,17 @@ from functools import wraps
 from inspect import getfullargspec, isfunction, isgeneratorfunction
 from pathlib import Path
 from types import FunctionType
+from uuid import uuid4
 
 from pydantic import TypeAdapter
 from requests import Response, Session
 
 from .types.account import Auth
 from .types.address import Address
+from .types.fare_estimate import FareEstimate, Point
 from .types.me import Me
 from .types.orders_history import OrdersHistory, OrdersHistoryStats
-from .types.payment_methods import PaymentMethods
+from .types.payment_methods import PaymentMethod, PaymentMethods
 
 
 class APIMethod(StrEnum):
@@ -190,3 +192,17 @@ class UklonAPI:
     def orders_history(
         self, page: int = None, page_size: int = None, *, include_statistic: bool = None
     ) -> OrdersHistory | OrdersHistoryStats: ...
+
+    @uklon_api(APIMethod.POST)
+    def fare_estimate(
+        self,
+        route: list[Point],
+        payment_method: PaymentMethod,
+    ) -> FareEstimate:
+        yield {
+            "fare_id": uuid4().hex,
+            "route": {
+                "points": [r.model_dump() for r in route],
+            },
+            "payment_method": payment_method.as_dict(),
+        }
