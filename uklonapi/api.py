@@ -155,6 +155,7 @@ class UklonAPI:
 
     @uklon_api(APIMethod.POST, json=False)
     def account__auth(self, grant_type, **kwargs) -> Auth:
+        self.auth = None
         yield {
             "grant_type": grant_type,
             "client_id": self.client_id,
@@ -164,11 +165,10 @@ class UklonAPI:
         self.auth = yield
 
     def account_auth_password(self, username: str, password: str):
-        self.auth = None
         self.account__auth(AuthGrantType.PASSWORD, username=username, password=password)
 
     def account_auth_refresh_token(self):
-        refresh_token, self.auth = self.auth.refresh_token, None
+        refresh_token = self.auth.refresh_token
         self.account__auth(AuthGrantType.REFRESH_TOKEN, refresh_token=refresh_token)
 
     def auth_save_to_file(self, filename: str = None):
