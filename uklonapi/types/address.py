@@ -4,8 +4,6 @@ from typing import Iterator
 
 from pydantic import BaseModel, RootModel
 
-from .fare_estimate import Point as FarePoint
-
 
 class Point(BaseModel):
     lat: float
@@ -18,6 +16,18 @@ class AddressPoint(BaseModel):
     source_type: str
     point: Point
 
+    @cached_property
+    def name(self):
+        return ", ".join(
+            filter(
+                None,
+                (
+                    self.address_name,
+                    self.house_number,
+                ),
+            )
+        )
+
 
 class Address(BaseModel):
     id: str
@@ -27,18 +37,6 @@ class Address(BaseModel):
     type: str
     comment: str
     address_point: AddressPoint
-
-    def as_point(self) -> FarePoint:
-        return FarePoint(
-            name=", ".join(
-                filter(
-                    None,
-                    (self.address_point.address_name, self.address_point.house_number),
-                )
-            ),
-            lat=self.address_point.point.lat,
-            lng=self.address_point.point.lng,
-        )
 
 
 class AddressType(StrEnum):

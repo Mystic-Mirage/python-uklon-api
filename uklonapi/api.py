@@ -227,7 +227,9 @@ class UklonAPI:
             "route": {
                 "points": [
                     (
-                        point.as_point() if isinstance(point, Address) else point
+                        Point.from_address(point)
+                        if isinstance(point, Address)
+                        else point
                     ).model_dump()
                     for point in route
                 ],

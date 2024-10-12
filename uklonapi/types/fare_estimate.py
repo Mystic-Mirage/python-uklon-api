@@ -4,12 +4,21 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from . import Unset
+from .address import Address
 
 
 class Point(BaseModel):
     name: str
     lat: float
     lng: float
+
+    @classmethod
+    def from_address(cls, address: Address):
+        return cls(
+            name=address.address_point.name,
+            lat=address.address_point.point.lat,
+            lng=address.address_point.point.lng,
+        )
 
 
 class _RideCondition(BaseModel):
