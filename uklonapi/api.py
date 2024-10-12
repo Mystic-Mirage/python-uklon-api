@@ -146,7 +146,7 @@ class UklonAPI:
         return f"{self._base_url}/{version}/{path}"
 
     def _headers(self) -> dict[str, str]:
-        headers = {"App_uid": self.app_uid}
+        headers = {"app_uid": self.app_uid}
         if self.auth:
             headers["Authorization"] = (
                 f"{self.auth.token_type} {self.auth.access_token}"
