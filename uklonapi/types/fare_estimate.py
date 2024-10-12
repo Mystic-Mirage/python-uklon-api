@@ -2,6 +2,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from . import Unset
+
 
 class Point(BaseModel):
     name: str
@@ -22,7 +24,7 @@ class Fare(BaseModel):
     extra: int
     multiplier: float
     cancellation_fare: float
-    pickup_eta: int = None
+    pickup_eta: int = Unset
 
 
 class FareEstimate(BaseModel):
