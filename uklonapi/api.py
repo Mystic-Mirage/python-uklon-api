@@ -234,7 +234,7 @@ class UklonAPI:
                     for point in route
                 ],
             },
-            "payment_method": payment_method.as_dict(),
+            "payment_method": payment_method.for_fare(),
         }
         if ride_conditions:
             data["ride_conditions"] = [

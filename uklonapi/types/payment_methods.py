@@ -9,8 +9,11 @@ class PaymentMethod(BaseModel):
     description: str = Unset
     card_type: str = Unset
 
-    def as_dict(self):
-        return self.model_dump(include={"id", "payment_type"})
+    def for_fare(self):
+        return {
+            "id": self.id,
+            "type": self.payment_type,
+        }
 
 
 class PaymentMethods(BaseModel):
