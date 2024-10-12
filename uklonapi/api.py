@@ -4,7 +4,7 @@ from functools import wraps
 from inspect import getfullargspec, isfunction, isgeneratorfunction
 from pathlib import Path
 from types import FunctionType
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from pydantic import TypeAdapter
 from requests import Response, Session
@@ -195,12 +195,10 @@ class UklonAPI:
 
     @uklon_api(APIMethod.POST)
     def fare_estimate(
-        self,
-        route: list[Point],
-        payment_method: PaymentMethod,
+        self, route: list[Point], payment_method: PaymentMethod, fare_id: UUID = None
     ) -> FareEstimate:
         yield {
-            "fare_id": uuid4().hex,
+            "fare_id": fare_id or uuid4().hex,
             "route": {
                 "points": [r.model_dump() for r in route],
             },

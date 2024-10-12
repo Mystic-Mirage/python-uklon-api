@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel
 
 
@@ -27,5 +29,5 @@ class FareEta(Fare):
 
 
 class FareEstimate(BaseModel):
-    fare_id: str
+    fare_id: UUID
     product_fares: list[Fare | FareEta]
