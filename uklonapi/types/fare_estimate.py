@@ -22,12 +22,9 @@ class Fare(BaseModel):
     extra: int
     multiplier: float
     cancellation_fare: float
-
-
-class FareEta(Fare):
-    pickup_eta: int
+    pickup_eta: int = None
 
 
 class FareEstimate(BaseModel):
     fare_id: UUID
-    product_fares: list[Fare | FareEta]
+    product_fares: list[Fare]
