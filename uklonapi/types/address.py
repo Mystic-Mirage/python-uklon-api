@@ -1,3 +1,4 @@
+from enum import StrEnum, auto
 from functools import cached_property
 from typing import Iterator
 
@@ -40,6 +41,11 @@ class Address(BaseModel):
         )
 
 
+class AddressType(StrEnum):
+    HOME = auto()
+    WORK = auto()
+
+
 class FavoriteAddresses(RootModel[list[Address]]):
     def __getitem__(self, item) -> Address:
         return self.root[item]
@@ -48,12 +54,20 @@ class FavoriteAddresses(RootModel[list[Address]]):
         return iter(self.root)
 
     def __repr__(self):
-        return f"{self.__repr_name__()}({self.root!r}, home={self.home!r}, work={self.work!r})"
+        return f"{self.__repr_name__()}(home={self.home!r}, work={self.work!r}, other={self.other!r})"
 
     @cached_property
     def home(self) -> Address | None:
-        return next((address for address in self.root if address.type == "home"), None)
+        return next(
+            (address for address in self.root if address.type == AddressType.HOME), None
+        )
 
     @cached_property
     def work(self) -> Address | None:
-        return next((address for address in self.root if address.type == "work"), None)
+        return next(
+            (address for address in self.root if address.type == AddressType.WORK), None
+        )
+
+    @cached_property
+    def other(self) -> list[Address]:
+        return [address for address in self.root if address.type not in AddressType]
