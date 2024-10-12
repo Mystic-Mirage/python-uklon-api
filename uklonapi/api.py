@@ -11,7 +11,7 @@ from requests import Response, Session
 
 from .types.account import Auth
 from .types.address import Address, FavoriteAddresses
-from .types.fare_estimate import FareEstimate, Point
+from .types.fare_estimate import FareEstimate, Point, RideCondition
 from .types.me import Me
 from .types.orders_history import OrdersHistory, OrdersHistoryStats
 from .types.payment_methods import PaymentMethod, PaymentMethods
@@ -198,9 +198,10 @@ class UklonAPI:
         self,
         route: list[Point | Address],
         payment_method: PaymentMethod,
+        ride_conditions: set[RideCondition] = None,
         fare_id: UUID = None,
     ) -> FareEstimate:
-        yield {
+        data = {
             "fare_id": fare_id or uuid4().hex,
             "route": {
                 "points": [
@@ -212,3 +213,8 @@ class UklonAPI:
             },
             "payment_method": payment_method.as_dict(),
         }
+        if ride_conditions:
+            data["ride_conditions"] = [
+                ride_condition.model_dump() for ride_condition in ride_conditions
+            ]
+        yield data

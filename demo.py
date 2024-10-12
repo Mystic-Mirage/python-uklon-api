@@ -3,7 +3,7 @@ from pprint import pprint
 
 from requests import HTTPError
 
-from uklonapi import UklonAPI
+from uklonapi import RideCondition, UklonAPI
 
 if __name__ == "__main__":
     uklon = UklonAPI(
@@ -32,5 +32,6 @@ if __name__ == "__main__":
         uklon.fare_estimate(
             [favorite_addresses.home, favorite_addresses.work],
             payment_methods.default_payment_method,
+            ride_conditions={RideCondition.NON_SMOKER},
         )
     )
