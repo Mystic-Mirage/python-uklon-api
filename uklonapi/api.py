@@ -217,10 +217,11 @@ class UklonAPI:
         self,
         route: list[Point | Address],
         payment_method: PaymentMethod,
+        *,
         ride_conditions: set[RideCondition] = None,
         pickup_time: datetime = None,
-        selected_options: SelectedOptions = None,
         fare_id: UUID = None,
+        selected_options: SelectedOptions = None,
     ) -> FareEstimate:
         data = {
             "fare_id": str(fare_id or uuid4()),
