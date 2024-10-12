@@ -1,5 +1,4 @@
 import os
-from pprint import pprint
 
 from requests import HTTPError
 
@@ -24,11 +23,11 @@ if __name__ == "__main__":
 
     uklon.auth_save_to_file()
 
-    pprint(uklon.me())
-    pprint(favorite_addresses := uklon.favorite_addresses())
-    pprint(payment_methods := uklon.payment_methods())
-    pprint(uklon.orders_history(include_statistic=True))
-    pprint(
+    print(uklon.me())
+    print(favorite_addresses := uklon.favorite_addresses())
+    print(payment_methods := uklon.payment_methods())
+    print(uklon.orders_history(include_statistic=True))
+    print(
         uklon.fare_estimate(
             [favorite_addresses.home, favorite_addresses.work],
             payment_methods.default_payment_method,
