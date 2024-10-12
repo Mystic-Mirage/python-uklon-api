@@ -12,7 +12,7 @@ from requests import Response, Session
 
 from .types.account import Auth
 from .types.address import Address, FavoriteAddresses
-from .types.fare_estimate import FareEstimate, Point, RideCondition
+from .types.fare_estimate import FareEstimate, Point, RideCondition, SelectedOptions
 from .types.me import Me
 from .types.orders_history import OrdersHistory, OrdersHistoryStats
 from .types.payment_methods import PaymentMethod, PaymentMethods
@@ -201,6 +201,7 @@ class UklonAPI:
         payment_method: PaymentMethod,
         ride_conditions: set[RideCondition] = None,
         pickup_time: datetime = None,
+        selected_options: SelectedOptions = None,
         fare_id: UUID = None,
     ) -> FareEstimate:
         data = {
@@ -221,4 +222,6 @@ class UklonAPI:
             ]
         if pickup_time:
             data["pickup_time"] = int(pickup_time.timestamp())
+        if selected_options:
+            data["selected_options"] = selected_options.model_dump()
         yield data

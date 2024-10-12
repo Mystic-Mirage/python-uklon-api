@@ -44,6 +44,11 @@ class RideCondition(Enum):
         return self.value.model_dump(*args, **kwargs)
 
 
+class SelectedOptions(BaseModel):
+    extra_cost: int
+    product_type: str
+
+
 class Availability(BaseModel):
     available: bool
 
