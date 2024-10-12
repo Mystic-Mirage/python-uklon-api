@@ -1,4 +1,5 @@
 import os
+from pprint import pprint
 
 from uklonapi import RideCondition, UklonAPI
 
@@ -12,11 +13,11 @@ if __name__ == "__main__":
         uklon.account_auth_password(os.environ["USERNAME"], os.environ["PASSWORD"])
         uklon.auth_save_to_file()
 
-    print(uklon.me())
-    print(favorite_addresses := uklon.favorite_addresses())
-    print(payment_methods := uklon.payment_methods())
-    print(uklon.orders_history(include_statistic=True))
-    print(
+    pprint(uklon.me())
+    pprint(favorite_addresses := uklon.favorite_addresses())
+    pprint(payment_methods := uklon.payment_methods())
+    pprint(uklon.orders_history(include_statistic=True))
+    pprint(
         uklon.fare_estimate(
             [favorite_addresses.home, favorite_addresses.work],
             payment_methods.default_payment_method,
