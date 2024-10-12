@@ -223,7 +223,7 @@ class UklonAPI:
         fare_id: UUID = None,
     ) -> FareEstimate:
         data = {
-            "fare_id": fare_id or uuid4().hex,
+            "fare_id": fare_id or str(uuid4()),
             "route": {
                 "points": [
                     (
