@@ -60,6 +60,7 @@ class SelectedOptions(BaseModel):
 
 class Availability(BaseModel):
     available: bool
+    unavailability_reason: str = Unset
 
 
 class Fare(BaseModel):
