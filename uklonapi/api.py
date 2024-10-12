@@ -1,4 +1,5 @@
 from contextlib import suppress
+from datetime import datetime
 from enum import StrEnum, auto
 from functools import wraps
 from inspect import getfullargspec, isfunction, isgeneratorfunction
@@ -199,6 +200,7 @@ class UklonAPI:
         route: list[Point | Address],
         payment_method: PaymentMethod,
         ride_conditions: set[RideCondition] = None,
+        pickup_time: datetime = None,
         fare_id: UUID = None,
     ) -> FareEstimate:
         data = {
@@ -217,4 +219,6 @@ class UklonAPI:
             data["ride_conditions"] = [
                 ride_condition.model_dump() for ride_condition in ride_conditions
             ]
+        if pickup_time:
+            data["pickup_time"] = int(pickup_time.timestamp())
         yield data
