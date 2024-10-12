@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from .payment_methods import PaymentMethodBase
+from .payment_methods import PaymentMethod
 
 
 class Cost(BaseModel):
@@ -26,10 +26,6 @@ class Delivery(BaseModel):
     product_type: str
 
 
-class OrderPaymentMethod(PaymentMethodBase):
-    pass
-
-
 class Order(BaseModel):
     id: str
     pickup_time: int
@@ -38,7 +34,7 @@ class Order(BaseModel):
     donation_amount: int
     cost: Cost
     route: Route
-    payment_method: OrderPaymentMethod
+    payment_method: PaymentMethod
     rating: int
     order_system: str
     cancel_reason: str

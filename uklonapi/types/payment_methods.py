@@ -1,29 +1,16 @@
 from pydantic import BaseModel
 
 
-class PaymentMethodBase(BaseModel):
+class PaymentMethod(BaseModel):
     id: str
     payment_type: str
+    description: str = None
+    card_type: str = None
 
     def as_dict(self):
-        return {
-            "id": self.id,
-            "type": self.payment_type,
-        }
-
-
-class PaymentMethod(PaymentMethodBase):
-    description: str
-
-
-class PaymentMethodCard(PaymentMethod):
-    card_type: str
-
-
-class DefaultPaymentMethod(PaymentMethod):
-    pass
+        return self.model_dump(include={"id", "payment_type"})
 
 
 class PaymentMethods(BaseModel):
-    payment_methods: list[PaymentMethod | PaymentMethodCard]
-    default_payment_method: DefaultPaymentMethod
+    payment_methods: list[PaymentMethod]
+    default_payment_method: PaymentMethod
