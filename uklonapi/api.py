@@ -114,6 +114,21 @@ def uklon_api(
     return decorator
 
 
+def handle_exception(exception: type[Exception] | tuple[type[Exception], ...]):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            try:
+                f(*args, **kwargs)
+            except exception:
+                return False
+            return True
+
+        return wrapper
+
+    return decorator
+
+
 class UklonAPI:
     _base_url = "https://m.uklon.com.ua/api"
     _default_filename = "auth.json"
@@ -164,9 +179,11 @@ class UklonAPI:
         }
         self.auth = yield
 
+    @handle_exception(IOError)
     def account_auth_password(self, username: str, password: str):
         self.account__auth(AuthGrantType.PASSWORD, username=username, password=password)
 
+    @handle_exception(IOError)
     def account_auth_refresh_token(self):
         refresh_token = self.auth.refresh_token
         self.account__auth(AuthGrantType.REFRESH_TOKEN, refresh_token=refresh_token)
@@ -176,6 +193,7 @@ class UklonAPI:
             json = self.auth.model_dump_json(indent=2) + "\n"
             Path(filename or self._default_filename).write_text(json)
 
+    @handle_exception((OSError, ValueError))
     def auth_load_from_file(self, filename: str = None):
         json = Path(filename or self._default_filename).read_text()
         self.auth = Auth.model_validate_json(json)
