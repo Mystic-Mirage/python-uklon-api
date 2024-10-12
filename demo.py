@@ -30,7 +30,7 @@ if __name__ == "__main__":
     pprint(uklon.orders_history(include_statistic=True))
     pprint(
         uklon.fare_estimate(
-            [address.as_point() for address in favorite_addresses[:2]],
+            [favorite_addresses.home, favorite_addresses.work],
             payment_methods.default_payment_method,
         )
     )

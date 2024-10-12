@@ -10,7 +10,7 @@ from pydantic import TypeAdapter
 from requests import Response, Session
 
 from .types.account import Auth
-from .types.address import Address
+from .types.address import Address, FavoriteAddresses
 from .types.fare_estimate import FareEstimate, Point
 from .types.me import Me
 from .types.orders_history import OrdersHistory, OrdersHistoryStats
@@ -180,7 +180,7 @@ class UklonAPI:
         self.auth = Auth.model_validate_json(json)
 
     @uklon_api
-    def favorite_addresses(self) -> list[Address]: ...
+    def favorite_addresses(self) -> FavoriteAddresses: ...
 
     @uklon_api
     def me(self) -> Me: ...
@@ -195,12 +195,20 @@ class UklonAPI:
 
     @uklon_api(APIMethod.POST)
     def fare_estimate(
-        self, route: list[Point], payment_method: PaymentMethod, fare_id: UUID = None
+        self,
+        route: list[Point | Address],
+        payment_method: PaymentMethod,
+        fare_id: UUID = None,
     ) -> FareEstimate:
         yield {
             "fare_id": fare_id or uuid4().hex,
             "route": {
-                "points": [r.model_dump() for r in route],
+                "points": [
+                    (
+                        point.as_point() if isinstance(point, Address) else point
+                    ).model_dump()
+                    for point in route
+                ],
             },
             "payment_method": payment_method.as_dict(),
         }
