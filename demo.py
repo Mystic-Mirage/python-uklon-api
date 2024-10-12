@@ -18,9 +18,10 @@ if __name__ == "__main__":
     pprint(payment_methods := uklon.payment_methods())
     pprint(uklon.orders_history(include_statistic=True))
     pprint(
-        uklon.fare_estimate(
+        fare_estimate := uklon.fare_estimate(
             [favorite_addresses.home, favorite_addresses.work],
             payment_methods.default_payment_method,
             ride_conditions={RideCondition.NON_SMOKER},
         )
     )
+    pprint(fare_estimate.standard)

@@ -1,5 +1,6 @@
 from datetime import timedelta
 from enum import Enum
+from functools import cached_property
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -79,3 +80,9 @@ class Fare(BaseModel):
 class FareEstimate(BaseModel):
     fare_id: UUID
     product_fares: list[Fare]
+
+    @cached_property
+    def standard(self):
+        return next(
+            (pf for pf in self.product_fares if pf.product_type == "Standard"), None
+        )
