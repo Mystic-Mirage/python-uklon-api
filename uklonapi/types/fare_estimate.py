@@ -1,3 +1,4 @@
+from datetime import timedelta
 from enum import Enum
 from uuid import UUID
 
@@ -72,7 +73,7 @@ class Fare(BaseModel):
     extra: int
     multiplier: float
     cancellation_fare: float
-    pickup_eta: int = Unset
+    pickup_eta: timedelta = Unset
 
 
 class FareEstimate(BaseModel):
