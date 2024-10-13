@@ -13,6 +13,7 @@ from requests import Response, Session
 from .types.account import Auth
 from .types.address import Address, FavoriteAddresses
 from .types.cities import Cities
+from .types.city_settings import CitySettings
 from .types.fare_estimate import FareEstimate, Point, RideCondition, SelectedOptions
 from .types.me import Me
 from .types.orders_history import OrdersHistory, OrdersHistoryStats
@@ -208,6 +209,9 @@ class UklonAPI:
     @uklon_api
     def cities(self) -> Cities: ...
 
+    @uklon_api(version=APIVersion.V2)
+    def city_settings(self) -> CitySettings: ...
+
     @uklon_api
     def favorite_addresses(self) -> FavoriteAddresses: ...
 
@@ -249,7 +253,12 @@ class UklonAPI:
         }
         if ride_conditions:
             data["ride_conditions"] = [
-                ride_condition.model_dump() for ride_condition in ride_conditions
+                (
+                    RideCondition(ride_condition)
+                    if isinstance(ride_condition, str)
+                    else ride_condition
+                ).model_dump()
+                for ride_condition in ride_conditions
             ]
         if pickup_time:
             data["pickup_time"] = int(pickup_time.timestamp())

@@ -18,20 +18,27 @@ if __name__ == "__main__":
 
     cities = uklon.cities()
     city = cities.get(me.city_id)
+    city_settings = uklon.city_settings()
 
     orders_history = uklon.orders_history(include_statistic=True)
 
     favorite_addresses = uklon.favorite_addresses()
     payment_methods = uklon.payment_methods()
+    ride_conditions = {
+        RideCondition.NON_SMOKER,
+        *city_settings.city_preferences.preselected_ride_conditions,
+    }
     fare_estimate = uklon.fare_estimate(
         [favorite_addresses.home, favorite_addresses.work],
         payment_methods.default_payment_method,
-        ride_conditions={RideCondition.NON_SMOKER},
+        ride_conditions=ride_conditions,
     )
     standard = fare_estimate.standard
 
     pprint(me)
     pprint(city)
+
+    pprint(city_settings.city_preferences.preselected_ride_conditions)
 
     pprint(orders_history)
 

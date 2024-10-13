@@ -1,5 +1,5 @@
 from datetime import timedelta
-from enum import Enum
+from enum import Enum, EnumMeta
 from functools import cached_property
 from uuid import UUID
 
@@ -36,7 +36,14 @@ class _RideCondition(BaseModel):
         )
 
 
-class RideCondition(Enum):
+class RideConditionMeta(EnumMeta):
+    def __call__(cls, value: object | str, *args, **kwargs):
+        if isinstance(value, str):
+            return cls[value.upper()]
+        return super().__call__(value, *args, **kwargs)
+
+
+class RideCondition(Enum, metaclass=RideConditionMeta):
     BAGGAGE = _RideCondition(name="baggage")
     ANIMAL = _RideCondition(name="animal")
     CONDITIONER = _RideCondition(name="conditioner")
@@ -49,6 +56,9 @@ class RideCondition(Enum):
         if comment:
             return type(self.value)(name=self.value.name, comment=comment)
         return self
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
 
     def __hash__(self):
         return hash(self.value.name)
