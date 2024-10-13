@@ -132,7 +132,7 @@ def handle_exception(exception: type[Exception] | tuple[type[Exception], ...]):
 
 class UklonAPI:
     _base_url = "https://m.uklon.com.ua/api"
-    _default_filename = "auth.json"
+    _default_auth_filename = "auth.json"
 
     def __init__(
         self, app_uid: str, client_id: str, client_secret: str, city_id: int = None
@@ -198,11 +198,11 @@ class UklonAPI:
     def auth_save_to_file(self, filename: str = None):
         if self.auth:
             json = self.auth.model_dump_json(indent=2) + "\n"
-            Path(filename or self._default_filename).write_text(json)
+            Path(filename or self._default_auth_filename).write_text(json)
 
     @handle_exception((OSError, ValueError))
     def auth_load_from_file(self, filename: str = None):
-        json = Path(filename or self._default_filename).read_text()
+        json = Path(filename or self._default_auth_filename).read_text()
         self.auth = Auth.model_validate_json(json)
 
     @uklon_api
