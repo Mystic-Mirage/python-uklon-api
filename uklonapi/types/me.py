@@ -17,7 +17,7 @@ class Preferences(BaseModel):
     show_news: bool
     show_partners_offers: bool
     show_loyalty: bool
-    updated_at: int
+    updated_at: datetime
 
 
 class Details(BaseModel):
