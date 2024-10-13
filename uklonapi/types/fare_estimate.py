@@ -27,6 +27,9 @@ class _RideCondition(BaseModel):
     name: str
     comment: str = ""
 
+    def __hash__(self):
+        return hash(self.name)
+
     def __repr__(self):
         return f"RideCondition.{self.name.upper()}" + (
             f"({self.comment!r})" if self.comment else ""
