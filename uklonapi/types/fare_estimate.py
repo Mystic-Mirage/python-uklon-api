@@ -82,7 +82,7 @@ class FareEstimate(BaseModel):
     product_fares: list[Fare]
 
     @cached_property
-    def standard(self):
+    def standard(self) -> Fare:
         return next(
             (pf for pf in self.product_fares if pf.product_type == "Standard"), None
         )
