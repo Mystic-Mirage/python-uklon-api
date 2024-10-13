@@ -14,6 +14,8 @@ if __name__ == "__main__":
         uklon.auth_save_to_file()
 
     pprint(uklon.me())
+    pprint(cities := uklon.cities())
+    pprint(cities.get(1))
     pprint(favorite_addresses := uklon.favorite_addresses())
     pprint(payment_methods := uklon.payment_methods())
     pprint(uklon.orders_history(include_statistic=True))

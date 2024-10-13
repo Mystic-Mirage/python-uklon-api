@@ -12,6 +12,7 @@ from requests import Response, Session
 
 from .types.account import Auth
 from .types.address import Address, FavoriteAddresses
+from .types.cities import Cities
 from .types.fare_estimate import FareEstimate, Point, RideCondition, SelectedOptions
 from .types.me import Me
 from .types.orders_history import OrdersHistory, OrdersHistoryStats
@@ -197,6 +198,9 @@ class UklonAPI:
     def auth_load_from_file(self, filename: str = None):
         json = Path(filename or self._default_filename).read_text()
         self.auth = Auth.model_validate_json(json)
+
+    @uklon_api
+    def cities(self) -> Cities: ...
 
     @uklon_api
     def favorite_addresses(self) -> FavoriteAddresses: ...
