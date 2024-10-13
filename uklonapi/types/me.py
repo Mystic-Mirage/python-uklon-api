@@ -1,3 +1,5 @@
+from datetime import date, datetime
+
 from pydantic import BaseModel
 
 
@@ -20,11 +22,11 @@ class Preferences(BaseModel):
 
 class Details(BaseModel):
     has_car: bool
-    has_car_updated_at: int
+    has_car_updated_at: datetime
     has_animal: bool
-    has_animal_updated_at: int
+    has_animal_updated_at: datetime
     has_children: bool
-    has_children_updated_at: int
+    has_children_updated_at: datetime
 
 
 class Me(BaseModel):
@@ -34,7 +36,7 @@ class Me(BaseModel):
     email: str
     first_name: str
     rating: float
-    birth_date: str
+    birth_date: date
     gender: str
     city_id: int
     locale_id: int

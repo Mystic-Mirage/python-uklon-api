@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from .payment_methods import PaymentMethod
@@ -28,8 +30,8 @@ class Delivery(BaseModel):
 
 class Order(BaseModel):
     id: str
-    pickup_time: int
-    created_at: int
+    pickup_time: datetime
+    created_at: datetime
     status: str
     donation_amount: int
     cost: Cost
