@@ -43,7 +43,9 @@ class RideCondition(Enum):
     SILENCE = _RideCondition(name="silence")
 
     def __call__(self, comment):
-        return type(self.value)(name=self.value.name, comment=comment)
+        if comment:
+            return type(self.value)(name=self.value.name, comment=comment)
+        return self
 
     def __hash__(self):
         return hash(self.value.name)
