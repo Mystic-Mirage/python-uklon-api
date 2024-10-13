@@ -24,10 +24,7 @@ if __name__ == "__main__":
 
     favorite_addresses = uklon.favorite_addresses()
     payment_methods = uklon.payment_methods()
-    ride_conditions = {
-        RideCondition.NON_SMOKER,
-        *city_settings.city_preferences.preselected_ride_conditions,
-    }
+    ride_conditions = city_settings.ride_conditions({RideCondition.NON_SMOKER})
     fare_estimate = uklon.fare_estimate(
         [favorite_addresses.home, favorite_addresses.work],
         payment_methods.default_payment_method,
@@ -38,10 +35,9 @@ if __name__ == "__main__":
     pprint(me)
     pprint(city)
 
-    pprint(city_settings.city_preferences.preselected_ride_conditions)
-
     pprint(orders_history)
 
     pprint(favorite_addresses)
     pprint(payment_methods)
+    pprint(ride_conditions)
     pprint(fare_estimate.standard)
