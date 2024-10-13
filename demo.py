@@ -13,17 +13,28 @@ if __name__ == "__main__":
         uklon.account_auth_password(os.environ["USERNAME"], os.environ["PASSWORD"])
         uklon.auth_save_to_file()
 
-    pprint(uklon.me())
-    pprint(cities := uklon.cities())
-    pprint(cities.get(1))
-    pprint(favorite_addresses := uklon.favorite_addresses())
-    pprint(payment_methods := uklon.payment_methods())
-    pprint(uklon.orders_history(include_statistic=True))
-    pprint(
-        fare_estimate := uklon.fare_estimate(
-            [favorite_addresses.home, favorite_addresses.work],
-            payment_methods.default_payment_method,
-            ride_conditions={RideCondition.NON_SMOKER},
-        )
+    me = uklon.me()
+    uklon.city_id = me.city_id
+
+    cities = uklon.cities()
+    city = cities.get(me.city_id)
+
+    orders_history = uklon.orders_history(include_statistic=True)
+
+    favorite_addresses = uklon.favorite_addresses()
+    payment_methods = uklon.payment_methods()
+    fare_estimate = uklon.fare_estimate(
+        [favorite_addresses.home, favorite_addresses.work],
+        payment_methods.default_payment_method,
+        ride_conditions={RideCondition.NON_SMOKER},
     )
+    standard = fare_estimate.standard
+
+    pprint(me)
+    pprint(city)
+
+    pprint(orders_history)
+
+    pprint(favorite_addresses)
+    pprint(payment_methods)
     pprint(fare_estimate.standard)

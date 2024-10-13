@@ -134,10 +134,14 @@ class UklonAPI:
     _base_url = "https://m.uklon.com.ua/api"
     _default_filename = "auth.json"
 
-    def __init__(self, app_uid: str, client_id: str, client_secret: str):
+    def __init__(
+        self, app_uid: str, client_id: str, client_secret: str, city_id: int = None
+    ):
         self.app_uid = app_uid
         self.client_id = client_id
         self.client_secret = client_secret
+
+        self.city_id = city_id
 
         self.auth: Auth | None = None
 
@@ -148,6 +152,8 @@ class UklonAPI:
 
     def _headers(self) -> dict[str, str]:
         headers = {"app_uid": self.app_uid}
+        if self.city_id:
+            headers["city_id"] = str(self.city_id)
         if self.auth:
             headers["Authorization"] = (
                 f"{self.auth.token_type} {self.auth.access_token}"
