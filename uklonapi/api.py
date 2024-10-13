@@ -232,7 +232,7 @@ class UklonAPI:
         route: list[Point | Address],
         payment_method: PaymentMethod,
         *,
-        ride_conditions: set[RideCondition] = None,
+        ride_conditions: set[RideCondition | str] = None,
         pickup_time: datetime = None,
         fare_id: UUID = None,
         selected_options: SelectedOptions = None,
