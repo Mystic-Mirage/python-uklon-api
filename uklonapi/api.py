@@ -8,7 +8,6 @@ from pathlib import Path
 from types import FunctionType
 from uuid import UUID, uuid4
 
-import jwt
 from pydantic import TypeAdapter
 from requests import Response, Session
 
@@ -202,13 +201,7 @@ class UklonAPI:
         self.auth = Auth.model_validate_json(json)
 
     def auth_expired(self):
-        return (
-            jwt.decode(
-                self.auth.access_token,
-                options={"verify_signature": False},
-            )["exp"]
-            < time.time()
-        )
+        return self.auth.access_token_exp < time.time()
 
     @uklon_api
     def cities(self) -> Cities: ...

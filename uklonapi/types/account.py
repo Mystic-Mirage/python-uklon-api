@@ -1,3 +1,6 @@
+from functools import cached_property
+
+import jwt
 from pydantic import BaseModel
 
 
@@ -9,3 +12,7 @@ class Auth(BaseModel):
     expires_in: int
     expires: str
     issued: str
+
+    @cached_property
+    def access_token_exp(self):
+        return jwt.decode(self.access_token, options={"verify_signature": False})["exp"]
