@@ -239,7 +239,7 @@ class UklonAPI:
     def fare_estimate(
         self,
         route: list[Point | Address],
-        payment_method: PaymentMethod,
+        entrance: int = None,
         *,
         payment_method: PaymentMethod = None,
         ride_conditions: set[RideCondition | str] = None,
@@ -261,6 +261,8 @@ class UklonAPI:
                 ],
             },
         }
+        if entrance:
+            data["route"]["entrance"] = entrance
         if payment_method:
             data["payment_method"] = payment_method.for_fare()
         if ride_conditions:
