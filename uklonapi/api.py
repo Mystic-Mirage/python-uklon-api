@@ -241,6 +241,7 @@ class UklonAPI:
         route: list[Point | Address],
         payment_method: PaymentMethod,
         *,
+        payment_method: PaymentMethod = None,
         ride_conditions: set[RideCondition | str] = None,
         pickup_time: datetime = None,
         include_route_info: bool = None,
@@ -259,8 +260,9 @@ class UklonAPI:
                     for point in route
                 ],
             },
-            "payment_method": payment_method.for_fare(),
         }
+        if payment_method:
+            data["payment_method"] = payment_method.for_fare()
         if ride_conditions:
             data["ride_conditions"] = [
                 (

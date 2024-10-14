@@ -38,7 +38,7 @@ if __name__ == "__main__":
     ride_conditions = city_settings.ride_conditions({RideCondition.NON_SMOKER})
     fare_estimate = uklon.fare_estimate(
         [favorite_addresses.home, favorite_addresses.work],
-        payment_methods.default_payment_method,
+        payment_method=payment_methods.default_payment_method,
         ride_conditions=ride_conditions,
         include_route_info=True,
     )
