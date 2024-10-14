@@ -12,17 +12,17 @@ if __name__ == "__main__":
 
     uklon = UklonAPI(app_uid, client_id, client_secret)
 
-    auth_success = None
+    auth_success = None  # `None` for auth data are loaded and valid
     if uklon.auth_load():
-        if uklon.auth_expired():
+        if uklon.auth_expired():  # try to refresh auth data if expired
             auth_success = uklon.account_auth_refresh_token()
     else:
-        auth_success = False
+        auth_success = False  # fail to load auth data from a file
 
-    if auth_success is False:
+    if auth_success is False:  # loading / refreshing was not success
         auth_success = uklon.account_auth_password(username, password)
 
-    if auth_success is True:
+    if auth_success:  # `True` if auth data have been updated
         uklon.auth_save()
 
     me = uklon.me(update_city=True)  # or just `me = uklon.update_city()`
