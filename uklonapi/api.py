@@ -70,9 +70,12 @@ def _uklon_api_wrapper(
         call_kwargs = next(generator) or call_kwargs
 
         if method == APIMethod.GET:
-            kw = {"params": call_kwargs} if call_kwargs else {}
+            kw_key = "params"
+        elif json:
+            kw_key = "json"
         else:
-            kw = {"json" if json else "data": call_kwargs} if call_kwargs else {}
+            kw_key = "data"
+        kw = {kw_key: call_kwargs} if call_kwargs else {}
         response: Response = getattr(self, method)(version, path, **kw)
 
         result = (
