@@ -75,23 +75,14 @@ def _uklon_api_wrapper(
             kw = {"json" if json else "data": call_kwargs} if call_kwargs else {}
         response: Response = getattr(self, method)(version, path, **kw)
 
-        data = response.json()
-        try:
-            # The second yield (or return) receives the response data
-            # then the generator modifies it if needed and yields/returns it back
-            data = generator.send(data) or data
-        except StopIteration as e:
-            data = e.value or data
-
         result = (
-            TypeAdapter(return_type).validate_python(data)
+            TypeAdapter(return_type).validate_json(response.text)
             if (return_type := f.__annotations__.get("return"))
             else None
         )
 
         with suppress(StopIteration):
-            # The third yield (or return) receives a Pydantic object
-            # for example to store it
+            # A yield receives a Pydantic object to store/process it internally, for example
             generator.send(result)
 
         return result
@@ -178,14 +169,13 @@ class UklonAPI:
 
     @uklon_api(APIMethod.POST, json=False)
     def account__auth(self, grant_type, **kwargs) -> Auth:
-        self.auth = None
-        yield {
+        self.auth = None  # it's necessary to set the auth to None before yielding
+        self.auth = yield {
             "grant_type": grant_type,
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             **kwargs,
         }
-        self.auth = yield
 
     @handle_exception(IOError)
     def account_auth_password(self, username: str, password: str):
@@ -217,7 +207,6 @@ class UklonAPI:
 
     @uklon_api
     def me(self, update_city=False) -> Me:
-        yield
         if update_city:
             self.city_id = (yield).city_id
 
