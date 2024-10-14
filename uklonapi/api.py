@@ -214,7 +214,7 @@ class UklonAPI:
             self.city_id = (yield).city_id
 
     def update_city(self):
-        self.me(update_city=True)
+        return self.me(update_city=True)
 
     @uklon_api(APIMethod.POST, APIVersion.V2)
     def payment_methods(self) -> PaymentMethods: ...

@@ -13,9 +13,7 @@ if __name__ == "__main__":
         uklon.account_auth_password(os.environ["USERNAME"], os.environ["PASSWORD"])
         uklon.auth_save_to_file()
 
-    me = uklon.me(
-        update_city=True
-    )  # or just `uklon.update_city()` if you don't need the `me` object
+    me = uklon.me(update_city=True)  # or just `me = uklon.update_city()`
 
     cities = uklon.cities()
     city = cities.get(uklon.city_id or me.city_id)
