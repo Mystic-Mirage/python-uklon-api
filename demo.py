@@ -40,6 +40,7 @@ if __name__ == "__main__":
         [favorite_addresses.home, favorite_addresses.work],
         payment_methods.default_payment_method,
         ride_conditions=ride_conditions,
+        include_route_info=True,
     )
     standard = fare_estimate.standard
 
@@ -51,4 +52,5 @@ if __name__ == "__main__":
     pprint(favorite_addresses)
     pprint(payment_methods)
     pprint(ride_conditions)
+    pprint(fare_estimate)
     pprint(fare_estimate.standard)

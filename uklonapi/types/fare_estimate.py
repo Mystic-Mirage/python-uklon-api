@@ -92,9 +92,15 @@ class Fare(BaseModel):
     pickup_eta: timedelta = Unset
 
 
+class Route(BaseModel):
+    distance_meters: int
+    duration_seconds: timedelta
+
+
 class FareEstimate(BaseModel):
     fare_id: UUID
     product_fares: list[Fare]
+    route: Route = Unset
 
     @cached_property
     def standard(self) -> Fare:

@@ -243,6 +243,7 @@ class UklonAPI:
         *,
         ride_conditions: set[RideCondition | str] = None,
         pickup_time: datetime = None,
+        include_route_info: bool = None,
         fare_id: UUID = None,
         selected_options: SelectedOptions = None,
     ) -> FareEstimate:
@@ -271,6 +272,8 @@ class UklonAPI:
             ]
         if pickup_time:
             data["pickup_time"] = int(pickup_time.timestamp())
+        if include_route_info is not None:
+            data["include_route_info"] = include_route_info
         if selected_options:
             data["selected_options"] = selected_options.model_dump()
         yield data
