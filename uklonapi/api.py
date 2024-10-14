@@ -1,3 +1,4 @@
+import time
 from contextlib import suppress
 from datetime import datetime
 from enum import StrEnum, auto
@@ -7,6 +8,7 @@ from pathlib import Path
 from types import FunctionType
 from uuid import UUID, uuid4
 
+import jwt
 from pydantic import TypeAdapter
 from requests import Response, Session
 
@@ -184,20 +186,29 @@ class UklonAPI:
     def account_auth_password(self, username: str, password: str):
         self.account__auth(AuthGrantType.PASSWORD, username=username, password=password)
 
-    @handle_exception(IOError)
+    @handle_exception((AttributeError, IOError))
     def account_auth_refresh_token(self):
         refresh_token = self.auth.refresh_token
         self.account__auth(AuthGrantType.REFRESH_TOKEN, refresh_token=refresh_token)
 
-    def auth_save_to_file(self, filename: str = None):
-        if self.auth:
-            json = self.auth.model_dump_json(indent=2) + "\n"
-            Path(filename or self._default_auth_filename).write_text(json)
+    @handle_exception(AttributeError)
+    def auth_save(self, filename: str = None):
+        json = self.auth.model_dump_json(indent=2) + "\n"
+        Path(filename or self._default_auth_filename).write_text(json)
 
     @handle_exception((OSError, ValueError))
-    def auth_load_from_file(self, filename: str = None):
+    def auth_load(self, filename: str = None):
         json = Path(filename or self._default_auth_filename).read_text()
         self.auth = Auth.model_validate_json(json)
+
+    def auth_expired(self):
+        return (
+            jwt.decode(
+                self.auth.access_token,
+                options={"verify_signature": False},
+            )["exp"]
+            < time.time()
+        )
 
     @uklon_api
     def cities(self) -> Cities: ...

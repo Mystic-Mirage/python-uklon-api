@@ -4,14 +4,26 @@ from pprint import pprint
 from uklonapi import RideCondition, UklonAPI
 
 if __name__ == "__main__":
-    uklon = UklonAPI(
-        os.environ["APP_UID"], os.environ["CLIENT_ID"], os.environ["CLIENT_SECRET"]
-    )
+    app_uid = os.environ["UKLON_APP_UID"]
+    client_id = os.environ["UKLON_CLIENT_ID"]
+    client_secret = os.environ["UKLON_CLIENT_SECRET"]
+    username = os.environ["UKLON_USERNAME"]
+    password = os.environ["UKLON_PASSWORD"]
 
-    auth_success = uklon.auth_load_from_file() and uklon.account_auth_refresh_token()
-    if not auth_success:
-        uklon.account_auth_password(os.environ["USERNAME"], os.environ["PASSWORD"])
-        uklon.auth_save_to_file()
+    uklon = UklonAPI(app_uid, client_id, client_secret)
+
+    auth_success = None
+    if uklon.auth_load():
+        if uklon.auth_expired():
+            auth_success = uklon.account_auth_refresh_token()
+    else:
+        auth_success = False
+
+    if auth_success is False:
+        auth_success = uklon.account_auth_password(username, password)
+
+    if auth_success is True:
+        uklon.auth_save()
 
     me = uklon.me(update_city=True)  # or just `me = uklon.update_city()`
 
