@@ -216,7 +216,13 @@ class UklonAPI:
     def favorite_addresses(self) -> FavoriteAddresses: ...
 
     @uklon_api
-    def me(self) -> Me: ...
+    def me(self, update_city=False) -> Me:
+        yield
+        if update_city:
+            self.city_id = (yield).city_id
+
+    def update_city(self):
+        self.me(update_city=True)
 
     @uklon_api(APIMethod.POST, APIVersion.V2)
     def payment_methods(self) -> PaymentMethods: ...

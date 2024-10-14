@@ -13,11 +13,12 @@ if __name__ == "__main__":
         uklon.account_auth_password(os.environ["USERNAME"], os.environ["PASSWORD"])
         uklon.auth_save_to_file()
 
-    me = uklon.me()
-    uklon.city_id = me.city_id
+    me = uklon.me(
+        update_city=True
+    )  # or just `uklon.update_city()` if you don't need the `me` object
 
     cities = uklon.cities()
-    city = cities.get(me.city_id)
+    city = cities.get(uklon.city_id or me.city_id)
     city_settings = uklon.city_settings()
 
     orders_history = uklon.orders_history(include_statistic=True)
