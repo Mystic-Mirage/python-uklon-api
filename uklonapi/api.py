@@ -6,6 +6,7 @@ from functools import wraps
 from inspect import getfullargspec, isfunction, isgeneratorfunction
 from pathlib import Path
 from types import FunctionType
+from typing import Union, cast, get_overloads, overload
 from uuid import UUID, uuid4
 
 from pydantic import TypeAdapter
@@ -17,6 +18,7 @@ from .types.cities import Cities
 from .types.city_settings import CitySettings
 from .types.fare_estimate import FareEstimate, Point, RideCondition, SelectedOptions
 from .types.me import Me
+from .types.orders import Order
 from .types.orders_history import OrdersHistory, OrdersHistoryStats
 from .types.payment_methods import PaymentMethod, PaymentMethods
 
@@ -45,6 +47,8 @@ def _uklon_api_wrapper(
 
     @wraps(f)
     def wrapper(self: "UklonAPI", *args, **kwargs):
+        nonlocal path
+
         spec = getfullargspec(f)
         default_kwargs = {
             k: v
@@ -68,7 +72,10 @@ def _uklon_api_wrapper(
 
         # The first generator execution (or the first function call).
         # Expecting the updated kwargs for request is yielded/returned or None
-        call_kwargs = next(generator) or call_kwargs
+        call_kwargs = next(generator, None) or call_kwargs
+
+        if url_path_arg := call_kwargs.pop(self._url_path_arg_key, None):
+            path = (path, url_path_arg)
 
         if method == APIMethod.GET:
             kw_key = "params"
@@ -79,9 +86,18 @@ def _uklon_api_wrapper(
         kw = {kw_key: call_kwargs} if call_kwargs else {}
         response: Response = getattr(self, method)(version, path, **kw)
 
+        return_type = f.__annotations__.get("return")
+        if not return_type:
+            overloads = cast(list[FunctionType], get_overloads(f))
+            if overloads:
+                return_type = Union[
+                    *filter(
+                        None, (ol.__annotations__.get("return") for ol in overloads)
+                    )
+                ]
         result = (
             TypeAdapter(return_type).validate_json(response.text)
-            if (return_type := f.__annotations__.get("return"))
+            if return_type
             else None
         )
 
@@ -129,6 +145,7 @@ def handle_exception(exception: type[Exception] | tuple[type[Exception], ...]):
 class UklonAPI:
     _base_url = "https://m.uklon.com.ua/api"
     _default_auth_filename = "auth.json"
+    _url_path_arg_key = "_URL_PATH_ARG"
 
     def __init__(
         self, app_uid: str, client_id: str, client_secret: str, city_id: int = None
@@ -143,8 +160,10 @@ class UklonAPI:
 
         self._session = Session()
 
-    def _url(self, version: APIVersion, path: str) -> str:
-        return f"{self._base_url}/{version}/{path}"
+    def _url(self, version: APIVersion, path: str | tuple[str, ...]) -> str:
+        if isinstance(path, str):
+            path = (path,)
+        return "/".join((self._base_url, version, *path))
 
     def _headers(self) -> dict[str, str]:
         headers = {"app_uid": self.app_uid}
@@ -156,20 +175,27 @@ class UklonAPI:
             )
         return headers
 
-    def get(self, version, path, *, params=None) -> Response:
+    def get(
+        self, version: APIVersion, path: str | tuple[str, ...], *, params=None
+    ) -> Response:
         url = self._url(version, path)
         headers = self._headers()
         response = self._session.get(url, headers=headers, params=params)
         response.raise_for_status()
         return response
 
-    def post(self, version, path, *, data=None, json=None) -> Response:
+    def post(
+        self, version: APIVersion, path: str | tuple[str, ...], *, data=None, json=None
+    ) -> Response:
         url = self._url(version, path)
         headers = self._headers()
         json = json if data else (json or {})
         response = self._session.post(url, headers=headers, data=data, json=json)
         response.raise_for_status()
         return response
+
+    def add_url_path(self, path, **kwargs):
+        return {self._url_path_arg_key: path, **kwargs} if path else kwargs
 
     @uklon_api(APIMethod.POST, json=False)
     def account__auth(self, grant_type, **kwargs) -> Auth:
@@ -274,3 +300,11 @@ class UklonAPI:
         if selected_options:
             data["selected_options"] = selected_options.model_dump()
         yield data
+
+    @overload
+    def orders(self) -> list[Order]: ...
+    @overload
+    def orders(self, order_id: str) -> Order: ...
+    @uklon_api
+    def orders(self, order_id: str = None):
+        yield self.add_url_path(order_id)

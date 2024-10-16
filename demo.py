@@ -44,6 +44,8 @@ if __name__ == "__main__":
     )
     standard = fare_estimate.standard
 
+    orders = uklon.orders()
+
     pprint(me)
     pprint(city)
 
@@ -54,3 +56,7 @@ if __name__ == "__main__":
     pprint(ride_conditions)
     pprint(fare_estimate)
     pprint(fare_estimate.standard)
+
+    pprint(orders)
+    if orders:
+        pprint(uklon.orders(orders[0].id))
