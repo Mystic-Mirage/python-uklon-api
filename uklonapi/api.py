@@ -3,7 +3,7 @@ from contextlib import suppress
 from datetime import datetime
 from enum import StrEnum, auto
 from functools import wraps
-from inspect import getfullargspec, isfunction, isgeneratorfunction
+from inspect import getfullargspec, isfunction, isgeneratorfunction, signature
 from pathlib import Path
 from types import FunctionType
 from typing import Union, cast, get_overloads, overload
@@ -74,8 +74,16 @@ def _uklon_api_wrapper(
         # Expecting the updated kwargs for request is yielded/returned or None
         call_kwargs = next(generator, None) or call_kwargs
 
-        if url_path_arg := call_kwargs.pop(self._url_path_arg_key, None):
-            path = (path, url_path_arg)
+        sign = signature(f)
+        positionals = {k: v for k, v in zip(reversed(spec.args), reversed(args))}
+        path_args = tuple(
+            arg
+            for param in sign.parameters.values()
+            if param.kind is param.POSITIONAL_ONLY
+            if (arg := positionals.get(param.name)) is not None
+        )
+        if path_args:
+            path = (path, *path_args)
 
         if method == APIMethod.GET:
             kw_key = "params"
@@ -145,7 +153,6 @@ def handle_exception(exception: type[Exception] | tuple[type[Exception], ...]):
 class UklonAPI:
     _base_url = "https://m.uklon.com.ua/api"
     _default_auth_filename = "auth.json"
-    _url_path_arg_key = "_URL_PATH_ARG"
 
     def __init__(
         self, app_uid: str, client_id: str, client_secret: str, city_id: int = None
@@ -193,9 +200,6 @@ class UklonAPI:
         response = self._session.post(url, headers=headers, data=data, json=json)
         response.raise_for_status()
         return response
-
-    def add_url_path(self, path, **kwargs):
-        return {self._url_path_arg_key: path, **kwargs} if path else kwargs
 
     @uklon_api(APIMethod.POST, json=False)
     def account__auth(self, grant_type, **kwargs) -> Auth:
@@ -304,7 +308,6 @@ class UklonAPI:
     @overload
     def orders(self) -> list[Order]: ...
     @overload
-    def orders(self, order_id: str) -> Order: ...
+    def orders(self, order_id: str, /) -> Order: ...
     @uklon_api
-    def orders(self, order_id: str = None):
-        yield self.add_url_path(order_id)
+    def orders(self, order_id: str = None, /): ...
