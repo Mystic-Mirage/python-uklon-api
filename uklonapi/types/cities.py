@@ -32,5 +32,5 @@ class Cities(RootModel[list[City]]):
     def __repr__(self):
         return f"{self.__repr_name__()}({self.root!r})"
 
-    def get(self, id_: int) -> City:
+    def get(self, id_: int) -> City | None:
         return next((city for city in self.root if city.id == id_), None)

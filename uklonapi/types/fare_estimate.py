@@ -103,7 +103,7 @@ class FareEstimate(BaseModel):
     route: Route = Unset
 
     @cached_property
-    def standard(self) -> Fare:
+    def standard(self) -> Fare | None:
         return next(
             (pf for pf in self.product_fares if pf.product_type == "Standard"), None
         )
