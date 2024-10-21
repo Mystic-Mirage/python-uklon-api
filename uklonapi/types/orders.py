@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Literal
 
 from pydantic import BaseModel
@@ -96,7 +96,7 @@ class Idle(BaseModel):
 class Traffic(BaseModel):
     region_traffic_level: int
     route_traffic_level: int
-    route_time: int
+    route_time: timedelta
     traffic_jam_intervals: list
 
 
